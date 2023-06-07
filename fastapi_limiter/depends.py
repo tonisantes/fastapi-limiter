@@ -5,6 +5,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.websockets import WebSocket
 import redis as pyredis
+import aioredis
 
 from fastapi_limiter import FastAPILimiter
 
@@ -52,7 +53,7 @@ class RateLimiter:
         key = f"{FastAPILimiter.prefix}:{rate_key}:{route_index}:{dep_index}"
         try:
             pexpire = await self._check(key)
-        except pyredis.exceptions.NoScriptError:
+        except (aioredis.exceptions.NoScriptError, pyredis.exceptions.NoScriptError):
             FastAPILimiter.lua_sha = await FastAPILimiter.redis.script_load(
                 FastAPILimiter.lua_script
             )
